@@ -52,11 +52,9 @@ fun QuestionScreen(
     navController: NavController,
     index: Int
 ) {
-    // Один ViewModel на весь флоу вопросов — берём из родительского back stack entry
     val parentEntry = remember(navController) { navController.getBackStackEntry(Routes.QUIZ) }
     val viewModel: QuestionViewModel = hiltViewModel(parentEntry)
 
-    // Навигационные эффекты
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -70,7 +68,6 @@ fun QuestionScreen(
         }
     }
 
-    // Подвязываем индекс вопроса
     LaunchedEffect(index) { viewModel.bindIndex(index) }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -184,7 +181,6 @@ private fun AnswerRow(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    // Когда вариант выбран — обводка darkPurple, плюс слева иконка ic_check
     val border = if (selected) BorderStroke(2.dp, DarkPurple) else null
 
     Surface(

@@ -145,7 +145,7 @@ private fun StarsRowResult(correct: Int, total: Int) {
                 painter = painterResource(R.drawable.ic_star),
                 contentDescription = null,
                 tint = if (i < correct) Yellow else Grey,
-                modifier = Modifier.size(40.dp) // ⬅️ звёзды 40dp
+                modifier = Modifier.size(40.dp)
             )
         }
         Spacer(Modifier.weight(1f))

@@ -50,7 +50,6 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.roundToInt
 
-/** Геометрия карточки для оверлея и чипа удаления. */
 data class CardBounds(val offset: IntOffset, val size: IntSize)
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -77,8 +76,7 @@ fun HistoryScreen(
     val chipHeight = 48.dp
     val chipRadius = 12.dp
     val chipGap = 7.dp
-
-    // Позиция и размер оверлейного контейнера (нужны для перевода координат root -> local)
+    
     var overlayOffsetInRoot by remember { mutableStateOf(IntOffset.Zero) }
 
     Box(
@@ -140,14 +138,12 @@ fun HistoryScreen(
             }
         }
 
-        // ---------- Overlay ----------
         val target = selected
         val bounds = selectedBounds
         if (target != null && bounds != null) {
             val corner = 28.dp
             val radiusPx = with(LocalDensity.current) { corner.toPx() }
 
-            // координаты дырки в ЛОКАЛЬНЫХ координатах оверлея
             val holeTopLeft = IntOffset(
                 x = bounds.offset.x - overlayOffsetInRoot.x,
                 y = bounds.offset.y - overlayOffsetInRoot.y
@@ -164,9 +160,7 @@ fun HistoryScreen(
                     .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                     .drawWithContent {
                         drawContent()
-                        // затемняем всё
                         drawRect(Color.Black.copy(alpha = 0.45f))
-                        // вырезаем окно под карточку
                         drawRoundRect(
                             color = Color.Transparent,
                             topLeft = Offset(holeTopLeft.x.toFloat(), holeTopLeft.y.toFloat()),
@@ -177,22 +171,20 @@ fun HistoryScreen(
                     }
                     .combinedClickable(
                         onClick = { selected = null; selectedBounds = null },
-                        onLongClick = { /* ignore */ }
+                        onLongClick = { }
                     )
             )
 
-            // ---------- Чип "Удалить" (тот же цвет, что и карточка: SurfaceLight) ----------
             val chipWpx = with(LocalDensity.current) { chipWidth.toPx().toInt() }
             val chipHpx = with(LocalDensity.current) { chipHeight.toPx().toInt() }
             val gapPx = with(LocalDensity.current) { chipGap.toPx().toInt() }
 
-            // позиция чипа тоже относительно оверлея
             val chipX = holeTopLeft.x + bounds.size.width - chipWpx
             val chipY = holeTopLeft.y - chipHpx - gapPx
 
             Surface(
                 shape = RoundedCornerShape(chipRadius),
-                color = SurfaceLight, // тот же цвет, что и карточка
+                color = SurfaceLight,
                 shadowElevation = 8.dp,
                 modifier = Modifier
                     .offset { IntOffset(chipX, chipY) }
@@ -228,7 +220,6 @@ fun HistoryScreen(
         }
     }
 
-    // ---------- Диалог после удаления ----------
     if (showDeletedDialog) {
         Dialog(
             onDismissRequest = { showDeletedDialog = false },
@@ -284,8 +275,6 @@ fun HistoryScreen(
     }
 }
 
-/* -------------------- Empty -------------------- */
-
 @Composable
 private fun EmptyHistoryCard(onStart: () -> Unit) {
     Surface(
@@ -327,8 +316,6 @@ private fun EmptyHistoryCard(onStart: () -> Unit) {
     }
 }
 
-/* -------------------- Attempt -------------------- */
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AttemptCard(
@@ -362,7 +349,7 @@ private fun AttemptCard(
 
 @Composable
 private fun AttemptCardContent(indexTitle: String, attempt: Attempt) {
-    Box(Modifier.padding(24.dp)) { // 24dp по макету со всех сторон
+    Box(Modifier.padding(24.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -410,8 +397,6 @@ private fun StarsRow(correct: Int, total: Int) {
     }
 }
 
-/* -------------------- Date/Time helpers -------------------- */
-
 private val ruLocale = Locale("ru")
 private val dateFormat by lazy {
     SimpleDateFormat("d MMMM", ruLocale).apply { timeZone = TimeZone.getDefault() }
@@ -422,8 +407,6 @@ private val timeFormat by lazy {
 
 private fun formatDate(ts: Long): String = dateFormat.format(Date(ts))
 private fun formatTime(ts: Long): String = timeFormat.format(Date(ts))
-
-/* -------------------- PREVIEWS -------------------- */
 
 @Preview(showBackground = true, showSystemUi = true, name = "History / пусто")
 @Composable
