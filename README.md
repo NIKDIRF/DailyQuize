@@ -13,11 +13,11 @@
 
 ## Скриншоты
 
-| Главный экран | Ошибка | Вопросы | Резултат |
-|---------------|--------------------|------------------|------------------|
-| ![](screenshots/welcome_screen.jpg) | ![](screenshots/error_screen.jpg) | ![](screenshots/question_screen.jpg) | ![](screenshots/result_screen.jpg) |
-| История | Удаление | Разбор | Разбор |
-| ![](screenshots/history_screen.jpg) | ![](screenshots/history_delete_screen.jpg) | ![](screenshots/details_screen.jpg) | ![](screenshots/details_screen2.jpg) |
+| Главный экран                       | Ошибка | Фильтрация | Вопросы                             |
+|-------------------------------------|---------------|---------------|-------------------------------------|
+| ![](screenshots/welcome_screen.jpg) | ![](screenshots/error_screen.jpg) | ![](screenshots/question_screen.jpg) | ![](screenshots/filters.jpg)        |
+| Резултат                            | История | Удаление | Разбор |
+| ![](screenshots/result_screen.jpg)  | ![](screenshots/history_screen.jpg) | ![](screenshots/history_delete_screen.jpg) | ![](screenshots/details_screen.jpg) |
 
 ---
 

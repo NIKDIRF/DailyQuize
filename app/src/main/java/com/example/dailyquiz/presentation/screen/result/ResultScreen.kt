@@ -2,34 +2,32 @@ package com.example.dailyquiz.presentation.screen.result
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.dailyquiz.R
+import com.example.dailyquiz.ui.components.AppButton
+import com.example.dailyquiz.ui.components.DailyCard
+import com.example.dailyquiz.ui.components.StarsRow
 import com.example.dailyquiz.ui.theme.*
 
 @Composable
 fun ResultScreen(
     correct: Int,
     navController: NavController,
-    viewModel: ResultViewModel = hiltViewModel()
+    categoryId: Int?,
+    difficultyApi: String?
 ) {
+
+    val categoryName = categoryId?.let { resolveCategoryTitle(it) }
+    val difficultyName = difficultyApi?.let { resolveDifficultyTitle(it) }
+
     val title = resultTitle(correct)
     val subtitle = resultSubtitle(correct)
 
@@ -54,101 +52,80 @@ fun ResultScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Результат",
+                    text = "Результаты",
                     color = White,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.headlineMedium.copy(fontSize = 32.sp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            Spacer(Modifier.height(40.dp))
-
-            Surface(
-                color = SurfaceLight,
-                shape = RoundedCornerShape(46.dp),
-                shadowElevation = 6.dp,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .padding(top = 32.dp, bottom = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    StarsRowResult(correct = correct, total = 5)
-
-                    Spacer(Modifier.height(24.dp))
-
+            if (categoryName != null || difficultyName != null) {
+                Spacer(Modifier.height(12.dp))
+                categoryName?.let {
                     Text(
-                        text = "$correct из 5",
+                        text = "Категория: $it",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Yellow,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = OnSurfaceLight,
-                        fontWeight = FontWeight.Bold,
+                        color = White,
                         textAlign = TextAlign.Center
                     )
-
-                    Spacer(Modifier.height(8.dp))
-
+                }
+                difficultyName?.let {
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = OnSurfaceLight,
+                        text = "Сложность: $it",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = White,
                         textAlign = TextAlign.Center
                     )
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Button(
-                        onClick = { navController.popBackStack(route = "quiz", inclusive = false) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Purple,
-                            contentColor = White
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                    ) {
-                        Text(
-                            text = "НАЧАТЬ ЗАНОВО",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun StarsRowResult(correct: Int, total: Int) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Spacer(Modifier.weight(1f))
-        repeat(total) { i ->
-            Icon(
-                painter = painterResource(R.drawable.ic_star),
-                contentDescription = null,
-                tint = if (i < correct) Yellow else Grey,
-                modifier = Modifier.size(40.dp)
-            )
+            Spacer(Modifier.height(24.dp))
+
+            DailyCard(
+                modifier = Modifier.fillMaxWidth(),
+                corner = 46.dp,
+                contentPaddingH = 24.dp,
+                contentPaddingV = 32.dp
+            ) {
+                StarsRow(total = 5, correct = correct, size = 40.dp)
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    text = "$correct из 5",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Yellow,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = OnSurfaceLight,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = OnSurfaceLight,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(52.dp))
+                AppButton(
+                    text = "НАЧАТЬ ЗАНОВО",
+                    onClick = { navController.popBackStack(route = "quiz", inclusive = false) }
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
         }
-        Spacer(Modifier.weight(1f))
     }
 }
 
@@ -170,10 +147,20 @@ private fun resultSubtitle(correct: Int): String = when (correct) {
     else -> "0/5 — не отчаивайтесь. Начните заново и удивите себя!"
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "Result 4/5")
-@Composable
-private fun PreviewResult() {
-    DailyQuizTheme {
-        ResultScreen(correct = 4, navController = rememberNavController())
-    }
+private fun resolveDifficultyTitle(d: String): String = when (d.lowercase()) {
+    "easy" -> "Низкая"
+    "medium" -> "Средняя"
+    "hard" -> "Высокая"
+    else -> d
 }
+
+private val categoryMap: Map<Int, String> = mapOf(
+    9 to "Общие знания",
+    17 to "Наука и природа",
+    18 to "Компьютеры",
+    22 to "География",
+    23 to "История"
+)
+
+private fun resolveCategoryTitle(id: Int): String =
+    categoryMap[id] ?: "Категория #$id"

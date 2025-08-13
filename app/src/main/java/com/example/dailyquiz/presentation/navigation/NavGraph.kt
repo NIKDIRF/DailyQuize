@@ -6,6 +6,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.dailyquiz.presentation.screen.history.HistoryScreen
@@ -18,28 +19,50 @@ import com.example.dailyquiz.presentation.screen.review.AttemptDetailsViewModel
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
+
     NavHost(
         navController = navController,
-        startDestination = Routes.QUIZ
+        startDestination = Routes.QUIZ_GRAPH
     ) {
-        composable(Routes.QUIZ) {
-            QuizScreen(navController = navController)
-        }
+        navigation(
+            startDestination = Routes.QUIZ,
+            route = Routes.QUIZ_GRAPH
+        ) {
+            composable(Routes.QUIZ) {
+                QuizScreen(navController = navController)
+            }
 
-        composable(
-            route = Routes.QUESTION,
-            arguments = listOf(navArgument("index") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val index = backStackEntry.arguments?.getInt("index") ?: 0
-            QuestionScreen(navController = navController, index = index)
-        }
+            composable(
+                route = Routes.QUESTION,
+                arguments = listOf(navArgument("index") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val index = backStackEntry.arguments?.getInt("index") ?: 0
+                QuestionScreen(navController = navController, index = index)
+            }
 
-        composable(
-            route = Routes.RESULT,
-            arguments = listOf(navArgument("correct") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val correct = backStackEntry.arguments?.getInt("correct") ?: 0
-            ResultScreen(navController = navController, correct = correct)
+            // ---------- Result с 3 аргументами ----------
+            composable(
+                route = Routes.RESULT,
+                arguments = listOf(
+                    navArgument("correct") { type = NavType.IntType },
+                    navArgument("category") { type = NavType.IntType },
+                    navArgument("difficulty") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val correct = backStackEntry.arguments?.getInt("correct") ?: 0
+                val rawCategory = backStackEntry.arguments?.getInt("category") ?: -1
+                val rawDifficulty = backStackEntry.arguments?.getString("difficulty") ?: "none"
+
+                val categoryId = if (rawCategory == -1) null else rawCategory
+                val difficulty = if (rawDifficulty == "none") null else rawDifficulty
+
+                ResultScreen(
+                    navController = navController,
+                    correct = correct,
+                    categoryId = categoryId,
+                    difficultyApi = difficulty
+                )
+            }
         }
 
         composable(Routes.HISTORY) {
