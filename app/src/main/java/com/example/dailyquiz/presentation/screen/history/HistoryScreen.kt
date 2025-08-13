@@ -31,26 +31,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.dailyquiz.R
 import com.example.dailyquiz.domain.model.Attempt
 import com.example.dailyquiz.presentation.navigation.Routes
+import com.example.dailyquiz.presentation.screen.history.components.AttemptCard
+import com.example.dailyquiz.presentation.screen.history.components.CardBounds
+import com.example.dailyquiz.presentation.screen.history.components.EmptyHistoryCard
 import com.example.dailyquiz.ui.theme.*
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import kotlin.math.roundToInt
-
-data class CardBounds(val offset: IntOffset, val size: IntSize)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -76,7 +70,7 @@ fun HistoryScreen(
     val chipHeight = 48.dp
     val chipRadius = 12.dp
     val chipGap = 7.dp
-    
+
     var overlayOffsetInRoot by remember { mutableStateOf(IntOffset.Zero) }
 
     Box(
@@ -149,7 +143,6 @@ fun HistoryScreen(
                 y = bounds.offset.y - overlayOffsetInRoot.y
             )
 
-            // сам оверлей
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -275,139 +268,6 @@ fun HistoryScreen(
     }
 }
 
-@Composable
-private fun EmptyHistoryCard(onStart: () -> Unit) {
-    Surface(
-        color = SurfaceLight,
-        shape = RoundedCornerShape(46.dp),
-        shadowElevation = 6.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Вы еще не проходили\nни одной викторины",
-                style = MaterialTheme.typography.titleMedium,
-                color = OnSurfaceLight,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(40.dp))
-            Button(
-                onClick = onStart,
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Purple,
-                    contentColor = White
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-            ) {
-                Text(
-                    text = "НАЧАТЬ ВИКТОРИНУ",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun AttemptCard(
-    indexTitle: String,
-    attempt: Attempt,
-    onClick: () -> Unit,
-    onLongPress: (CardBounds) -> Unit
-) {
-    var myOffset by remember { mutableStateOf(IntOffset.Zero) }
-    var mySize by remember { mutableStateOf(IntSize.Zero) }
-
-    Surface(
-        color = SurfaceLight,
-        shape = RoundedCornerShape(28.dp),
-        shadowElevation = 6.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { coords ->
-                val pos = coords.positionInRoot()
-                myOffset = IntOffset(pos.x.roundToInt(), pos.y.roundToInt())
-                mySize = coords.size
-            }
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = { onLongPress(CardBounds(myOffset, mySize)) }
-            )
-    ) {
-        AttemptCardContent(indexTitle = indexTitle, attempt = attempt)
-    }
-}
-
-@Composable
-private fun AttemptCardContent(indexTitle: String, attempt: Attempt) {
-    Box(Modifier.padding(24.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = indexTitle,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurfaceLight
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = formatDate(attempt.timestamp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = OnSurfaceLight
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                StarsRow(correct = attempt.correct, total = attempt.total)
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = formatTime(attempt.timestamp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = OnSurfaceLight
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun StarsRow(correct: Int, total: Int) {
-    val safeTotal = total.coerceAtLeast(1)
-    val safeCorrect = correct.coerceIn(0, safeTotal)
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        repeat(safeTotal) { i ->
-            Icon(
-                painter = painterResource(R.drawable.ic_star),
-                contentDescription = null,
-                tint = if (i < safeCorrect) Yellow else Grey,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-}
-
-private val ruLocale = Locale("ru")
-private val dateFormat by lazy {
-    SimpleDateFormat("d MMMM", ruLocale).apply { timeZone = TimeZone.getDefault() }
-}
-private val timeFormat by lazy {
-    SimpleDateFormat("HH:mm", ruLocale).apply { timeZone = TimeZone.getDefault() }
-}
-
-private fun formatDate(ts: Long): String = dateFormat.format(Date(ts))
-private fun formatTime(ts: Long): String = timeFormat.format(Date(ts))
-
 @Preview(showBackground = true, showSystemUi = true, name = "History / пусто")
 @Composable
 private fun PreviewHistoryEmpty() {
@@ -430,9 +290,12 @@ private fun PreviewHistoryEmpty() {
                     style = MaterialTheme.typography.headlineMedium,
                     color = White,
                     fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(40.dp))
+
                 EmptyHistoryCard(onStart = {})
+
                 Spacer(Modifier.weight(1f))
                 Image(
                     painter = painterResource(R.drawable.logo_dailyquiz),
@@ -442,7 +305,6 @@ private fun PreviewHistoryEmpty() {
                         .size(width = 180.dp, height = 40.dp),
                     contentScale = ContentScale.Fit
                 )
-                Spacer(Modifier.height(65.dp))
             }
         }
     }
@@ -474,9 +336,11 @@ private fun PreviewHistoryList() {
                     text = "История",
                     style = MaterialTheme.typography.headlineMedium,
                     color = White,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(40.dp))
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -531,7 +395,10 @@ private fun PreviewDeletedDialog() {
                                 color = OnSurfaceLight
                             )
                         }
-                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
                             TextButton(onClick = {}) {
                                 Text(
                                     text = "ЗАКРЫТЬ",
